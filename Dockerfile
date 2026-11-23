@@ -21,7 +21,7 @@ COPY . .
 RUN uv sync --frozen --no-dev
 
 # modelo e índice gerados no build: o container sobe pronto
-RUN python -m guardia.ml.train && python -W ignore -m guardia.rag.ingest
+RUN python -m guardia.ml.train && python -W ignore -m guardia.rag.ingest && chmod -R a+rX /app/.cache
 
 # só logs/ precisa ser gravável em runtime; chown -R em /app duplicaria a camada inteira (~3 GB)
 RUN mkdir -p /app/logs && chown appuser /app/logs
