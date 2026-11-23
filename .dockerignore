@@ -1,0 +1,11 @@
+.venv
+.env
+logs
+models
+index
+.git
+.superpowers
+.cache
+**/__pycache__
+.ipynb_checkpoints
+relatorio/*.html

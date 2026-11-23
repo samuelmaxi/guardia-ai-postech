@@ -58,8 +58,8 @@ def test_relato_gets_its_own_retrieval():
         calls.append((query, k))
         return [{"text": query, "source": f"{len(calls)}.pdf", "page": 1}]
 
-    s = run_analysis(HIGH, "o companheiro me empurrou", llm=None, retriever=spy)
-    assert ("o companheiro me empurrou", 2) in calls
+    s = run_analysis(HIGH, "dor de cabeça forte e visão turva", llm=None, retriever=spy)
+    assert ("dor de cabeça forte e visão turva", 2) in calls
     assert [d["source"] for d in s["docs"]] == ["1.pdf", "2.pdf"]
 
 
@@ -67,3 +67,20 @@ def test_no_relato_single_retrieval():
     calls = []
     run_analysis(HIGH, "", llm=None, retriever=lambda q, k=4: calls.append(k) or [])
     assert calls == [4]
+
+
+def test_attention_terms_trigger_safety_retrieval():
+    from guardia.graph import SAFETY_QUERY
+
+    calls = []
+    run_analysis(HIGH, "Disse que o marido a empurrou e ela tem medo de voltar.", llm=None,
+                 retriever=lambda q, k=4: calls.append(q) or [])
+    assert SAFETY_QUERY in calls
+
+
+def test_benign_relato_does_not_trigger_safety_retrieval():
+    from guardia.graph import SAFETY_QUERY
+
+    calls = []
+    run_analysis(HIGH, "Refere enjoo pela manhã e cansaço.", llm=None, retriever=lambda q, k=4: calls.append(q) or [])
+    assert SAFETY_QUERY not in calls

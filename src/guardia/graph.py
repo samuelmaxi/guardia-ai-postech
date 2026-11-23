@@ -4,6 +4,7 @@ validar_entrada -> prever_risco -> explicar_shap -> recuperar_documentos
 -> gerar_explicacao -> registrar_auditoria
 (entrada inválida: validar_entrada -> registrar_auditoria)
 """
+import re
 from typing import Callable, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -14,7 +15,16 @@ from guardia.ml.predict import CLASSES_PT, LABELS_PT, explain, predict, validate
 from guardia.prompts import build_messages, finalize
 from guardia.rag.retrieve import retrieve
 
-_DEFAULT = object()  # distingue "usar LLM do .env" de llm=None (sem LLM)
+_DEFAULT = object()
+
+# Termos que indicam possível situação de violência no relato. Só servem para buscar os
+# protocolos da rede de atendimento e mostrá-los à profissional; não decidem nada.
+SAFETY_TERMS = re.compile(
+    r"\b(agress\w*|agred\w*|bat(eu|e|ia|endo)|empurr\w*|espanc\w*|ameaç\w*|ameac\w*|violên\w*|violen\w*"
+    r"|machuc\w*|soc(o|ou|ava)|chut\w*|estupr\w*|abus\w*|medo|xing\w*|humilh\w*|proíbe|proibe|control\w*)\b",
+    re.IGNORECASE,
+)
+SAFETY_QUERY = "violência doméstica contra a mulher: como buscar ajuda, Ligue 180 e rede de atendimento"  # distingue "usar LLM do .env" de llm=None (sem LLM)
 
 
 class GuardiaState(TypedDict, total=False):
@@ -59,6 +69,8 @@ def build_graph(llm=_DEFAULT, retriever: Callable = retrieve):
             return {"docs": retriever(query, k=4)}
         # busca separada para o relato: senão os trechos clínicos dominam e a rede de proteção não aparece
         docs = retriever(query, k=3) + retriever(relato[:500], k=2)
+        if SAFETY_TERMS.search(relato):
+            docs += retriever(SAFETY_QUERY, k=2)
         unique = {(d["source"], d["page"], d["text"]): d for d in docs}
         return {"docs": list(unique.values())}
 
