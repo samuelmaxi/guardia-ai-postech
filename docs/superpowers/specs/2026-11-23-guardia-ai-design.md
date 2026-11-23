@@ -13,7 +13,7 @@ Fontes de verdade (na pasta-mãe `guardia-ai/`): `docs/enunciado-original.txt` p
 **Objetivos**
 - Cumprir todos os itens [O] de `specs/requisitos.md` e o desejável RF11 (citar a fonte).
 - Uma profissional preenche os sinais vitais e o relato de uma gestante e recebe: classe de risco + probabilidades, o que pesou (SHAP), uma explicação da LLM fundamentada em documentos com fonte citada, o aviso de que a decisão é dela, e a análise registrada em log.
-- App publicada na nuvem (Render), com deploy manual feito pelo José.
+- App publicada na nuvem (Render por padrão, com Azure e AWS como opções), com deploy manual feito pelo José.
 - Roteiro do vídeo para 4 pessoas, com o Samuel falando menos.
 
 **Não-objetivos**
@@ -77,7 +77,7 @@ guardia-ai-entrega/
 ├── tests/
 ├── Dockerfile
 ├── .env.example
-├── docs/deploy-render.md             # passo a passo do José
+├── docs/deploy.md                    # passo a passo do José (Render, Azure, AWS)
 ├── docs/roteiro-video.md
 ├── relatorio/relatorio.md → relatorio.pdf
 └── README.md
@@ -147,7 +147,12 @@ Limitação declarada: no Render grátis o disco é efêmero, então o log se pe
 ### 6.10 Docker e deploy
 
 - Dockerfile com `python:3.12-slim`: instala dependências, treina o modelo (rápido) e gera o índice no build, depois roda `streamlit` na porta `$PORT`.
-- `docs/deploy-render.md` para o **José**: criar o Web Service Docker no Render apontando para o repositório GitHub, configurar as env vars (`LLM_PROVIDER`, `LLM_MODEL` e a chave), desligar o auto-deploy e publicar por "Manual Deploy". Inclui checklist de verificação após o deploy e como fazer rollback.
+- `docs/deploy.md` para o **José**, com três opções que usam a mesma imagem Docker (o código não muda entre elas):
+  - **Render (padrão)**: Web Service Docker apontando para o repositório GitHub, env vars (`LLM_PROVIDER`, `LLM_MODEL` e a chave), auto-deploy desligado, publicação por "Manual Deploy".
+  - **Azure**: build e push da imagem para o Azure Container Registry, depois **Azure Container Apps** (ou App Service for Containers) com as mesmas env vars, a chave guardada como secret. Comandos `az` passo a passo.
+  - **AWS**: build e push para o **ECR**, depois **App Runner** a partir da imagem, com as env vars e a chave no Secrets Manager. Comandos `aws` passo a passo.
+  - Em todas: checklist de verificação após o deploy, rollback (voltar para a imagem/tag anterior) e aviso de custo (Azure e AWS cobram fora do free tier, então derrubar o serviço depois da avaliação).
+- A app lê a porta de `$PORT` (padrão 8501), o que serve para as três plataformas.
 
 ### 6.11 Testes
 
