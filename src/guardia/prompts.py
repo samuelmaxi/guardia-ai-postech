@@ -28,7 +28,9 @@ def build_messages(prediction: dict, shap_top: list[dict], docs: list[dict], rel
         for s in shap_top
     )
     excerpts = "\n\n".join(f"[{d['source']}, p. {d['page']}]\n{d['text']}" for d in docs) or "Nenhum trecho recuperado."
-    relato_txt = f"<relato>{relato.strip()}</relato>" if relato.strip() else "Nenhum relato fornecido."
+    # sem < e > o relato não consegue fechar o delimitador e injetar instruções
+    safe = relato.strip().replace("<", "‹").replace(">", "›")
+    relato_txt = f"<relato>{safe}</relato>" if safe else "Nenhum relato fornecido."
     human = f"""Resultado do modelo ({prediction['model_name']}): {CLASSES_PT[prediction['label']]}
 Probabilidades: {probas}
 

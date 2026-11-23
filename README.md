@@ -100,7 +100,7 @@ A app funciona em **modo degradado**: mostra risco, SHAP e fontes, mas não gera
 uv run pytest
 ```
 
-Os 30 testes cobrem: validação de entrada, predição, SHAP, RAG, guardrails do prompt (relato com instruções maliciosas, aviso final sempre presente), provedores sem chave, falha da LLM, auditoria em todos os caminhos e os exemplos da demo.
+Os 34 testes cobrem: validação de entrada, predição, SHAP, RAG, guardrails do prompt (relato com instruções maliciosas, aviso final sempre presente), provedores sem chave, falha da LLM, auditoria em todos os caminhos e os exemplos da demo.
 
 ## Segurança e responsabilidade
 
@@ -108,7 +108,7 @@ Os 30 testes cobrem: validação de entrada, predição, SHAP, RAG, guardrails d
 - **IA como apoio:** banner fixo na interface, e um aviso final anexado pelo código em toda explicação, sem depender da LLM.
 - **Guardrails no prompt:** usar só o resultado do modelo e os trechos recuperados, citar `[arquivo, p. X]`, dizer quando falta informação, nunca dar diagnóstico definitivo, medicamento/dose ou decisão de segurança. O relato é tratado como **dado**, não como instrução (proteção contra prompt injection).
 - **Sinais de atenção:** se o relato menciona agressão, ameaça ou medo, o RAG traz também os protocolos da rede de atendimento (Ligue 180, Lei Maria da Penha) para a profissional **considerar**. Nada é decidido automaticamente.
-- **Auditoria:** cada análise grava entradas, predição, SHAP, fontes, texto da LLM, provedor/modelo e timestamp.
+- **Auditoria:** cada análise grava entradas (inclusive o relato), predição, SHAP, fontes, texto da LLM, provedor/modelo e timestamp. Tentativas rejeitadas e falhas também são registradas. Como a demo publicada não tem login, o log pode ser baixado por quem acessar a URL; por isso, na demo, só dados sintéticos.
 
 ## Estrutura
 

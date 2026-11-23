@@ -84,3 +84,26 @@ def test_benign_relato_does_not_trigger_safety_retrieval():
     calls = []
     run_analysis(HIGH, "Refere enjoo pela manhã e cansaço.", llm=None, retriever=lambda q, k=4: calls.append(q) or [])
     assert SAFETY_QUERY not in calls
+
+
+class BlocksLLM(FakeListChatModel):
+    """Simula Gemini 3 / modelos com thinking: content vem como lista de blocos."""
+
+    def invoke(self, *a, **k):
+        from langchain_core.messages import AIMessage
+        return AIMessage(content=[{"type": "thinking", "thinking": "..."}, {"type": "text", "text": "explicação"}])
+
+
+def test_llm_content_blocks_are_handled():
+    s = run_analysis(HIGH, llm=BlocksLLM(responses=[""]), retriever=fake)
+    assert s["llm_error"] is None and s["explanation"].startswith("explicação")
+
+
+def test_failure_outside_llm_is_still_audited():
+    def broken_retriever(query, k=4):
+        raise OSError("índice ausente")
+
+    with pytest.raises(OSError):
+        run_analysis(HIGH, llm=None, retriever=broken_retriever)
+    row = read_log()[0]
+    assert row["status"] == "erro" and "índice ausente" in row["error"] and row["inputs"] == HIGH

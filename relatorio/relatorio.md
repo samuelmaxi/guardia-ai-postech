@@ -145,7 +145,7 @@ Uma aresta condicional leva a entrada inválida direto à auditoria, sem prediç
 - **Interface Streamlit** com três abas: *Nova análise* (formulário, exemplos sintéticos, resultado), *Auditoria* e *Sobre o modelo* (métricas).
 - **Docker:** imagem única que treina o modelo e gera o índice no build e roda como usuário não-root. Tamanho ~2,5 GB, uso de ~900 MB de RAM.
 - **Deploy manual** documentado para **Azure Container Apps** (recomendado), **Render** e **AWS App Runner**, com rollback e checklist (`docs/deploy.md`).
-- **Testes:** 30 testes automatizados (pytest).
+- **Testes:** 34 testes automatizados (pytest), incluindo um teste da interface com o AppTest do Streamlit.
 
 ## 11. Limitações
 
@@ -155,7 +155,7 @@ Uma aresta condicional leva a entrada inválida direto à auditoria, sem prediç
 4. **LLM:** pode errar ou interpretar mal um trecho, apesar dos guardrails. A qualidade varia com o provedor escolhido.
 5. **RAG:** o modelo de embeddings é pequeno (limite de memória), então a busca pode trazer trechos pouco relevantes. A regra de termos de atenção pode disparar em relatos benignos ("medo do parto") e não cobre todas as formas de relatar violência.
 6. **Lei Maria da Penha:** usamos o texto original de 2006, sem as alterações posteriores.
-7. **Auditoria efêmera na nuvem:** o log fica no disco do container e se perde a cada deploy. Produção exigiria armazenamento persistente.
+7. **Auditoria efêmera e aberta na nuvem:** o log fica no disco do container, se perde a cada deploy e pode ser baixado por quem acessa a URL, já que a demo não tem login. Produção exigiria armazenamento persistente e autenticação.
 8. **Memória:** o container precisa de ~1 GB, o que exclui os planos gratuitos menores.
 
 ## 12. Conclusão

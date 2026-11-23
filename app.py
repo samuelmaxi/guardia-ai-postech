@@ -30,6 +30,7 @@ tab_new, tab_audit, tab_model = st.tabs(["Nova análise", "Auditoria", "Sobre o 
 
 
 def _load_example():
+    st.session_state.result = None  # não deixar o resultado anterior ao lado de entradas novas
     ex = EXAMPLES.get(st.session_state.example)
     if ex:
         for f in FEATURES:

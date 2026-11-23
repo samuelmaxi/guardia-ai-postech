@@ -79,7 +79,7 @@ def build_graph(llm=_DEFAULT, retriever: Callable = retrieve):
             return {"explanation": None, "llm_error": None}
         try:
             msgs = build_messages(s["prediction"], s["shap_top"], s["docs"], s.get("relato", ""))
-            return {"explanation": finalize(llm.invoke(msgs).content), "llm_error": None}
+            return {"explanation": finalize(llm.invoke(msgs).text), "llm_error": None}
         except Exception as e:  # falha do provedor não pode derrubar a análise
             return {"explanation": None, "llm_error": f"{type(e).__name__}: {e}"}
 
@@ -117,4 +117,9 @@ def build_graph(llm=_DEFAULT, retriever: Callable = retrieve):
 
 
 def run_analysis(inputs: dict, relato: str = "", llm=_DEFAULT, retriever: Callable = retrieve) -> GuardiaState:
-    return build_graph(llm, retriever).invoke({"inputs": inputs, "relato": relato})
+    try:
+        return build_graph(llm, retriever).invoke({"inputs": inputs, "relato": relato})
+    except Exception as e:
+        # falha fora da LLM (modelo/índice ausente etc.): a tentativa ainda precisa ficar auditada
+        log_analysis({"status": "erro", "error": f"{type(e).__name__}: {e}", "inputs": inputs, "relato": relato})
+        raise

@@ -178,6 +178,7 @@ aws secretsmanager create-secret --name guardia-llm-key --secret-string COLE_A_C
 
 ## Limitações conhecidas
 
+- **Log público:** a URL não tem login, e a aba Auditoria permite baixar o log completo, **incluindo o texto dos relatos**. Na demo use só os exemplos sintéticos e nunca dados reais. Em produção seria preciso autenticação e restrição do download.
 - **Log efêmero:** `logs/auditoria.jsonl` fica no disco do container e se perde a cada deploy ou reinício. Para produção seria preciso um volume persistente ou um banco (ex.: Azure Files, EFS, Postgres).
 - **Custo:** Azure e AWS cobram fora da cota gratuita, e o Render Standard é pago. **Derrube o serviço depois da avaliação.**
 - **Cold start:** com `min-replicas 0` (Azure), a primeira requisição depois de um tempo parado leva alguns segundos.
