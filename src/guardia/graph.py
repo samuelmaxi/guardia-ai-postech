@@ -53,8 +53,14 @@ def build_graph(llm=_DEFAULT, retriever: Callable = retrieve):
 
     def recuperar_documentos(s: GuardiaState) -> GuardiaState:
         top3 = ", ".join(f"{LABELS_PT[x['feature']]} {x['value']:g}" for x in s["shap_top"][:3])
-        query = f"gestante {CLASSES_PT[s['prediction']['label']]}; fatores: {top3}; relato: {s.get('relato', '')[:300]}"
-        return {"docs": retriever(query, k=4)}
+        query = f"gestante {CLASSES_PT[s['prediction']['label']]}; fatores: {top3}"
+        relato = s.get("relato", "").strip()
+        if not relato:
+            return {"docs": retriever(query, k=4)}
+        # busca separada para o relato: senão os trechos clínicos dominam e a rede de proteção não aparece
+        docs = retriever(query, k=3) + retriever(relato[:500], k=2)
+        unique = {(d["source"], d["page"], d["text"]): d for d in docs}
+        return {"docs": list(unique.values())}
 
     def gerar_explicacao(s: GuardiaState) -> GuardiaState:
         if llm is None:

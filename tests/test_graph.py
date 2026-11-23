@@ -49,3 +49,21 @@ def test_llm_failure_keeps_ml_and_docs():
 def test_no_llm():
     s = run_analysis(LOW, llm=None, retriever=fake)
     assert s["explanation"] is None and read_log()[0]["status"] == "sem_llm"
+
+
+def test_relato_gets_its_own_retrieval():
+    calls = []
+
+    def spy(query, k=4):
+        calls.append((query, k))
+        return [{"text": query, "source": f"{len(calls)}.pdf", "page": 1}]
+
+    s = run_analysis(HIGH, "o companheiro me empurrou", llm=None, retriever=spy)
+    assert ("o companheiro me empurrou", 2) in calls
+    assert [d["source"] for d in s["docs"]] == ["1.pdf", "2.pdf"]
+
+
+def test_no_relato_single_retrieval():
+    calls = []
+    run_analysis(HIGH, "", llm=None, retriever=lambda q, k=4: calls.append(k) or [])
+    assert calls == [4]
